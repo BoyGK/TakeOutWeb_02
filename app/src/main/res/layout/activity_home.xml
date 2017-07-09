@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <TextView
+    <android.support.v4.view.ViewPager
+        android:id="@+id/main_viewPager"
+        android:layout_above="@+id/bottom_menu"
         android:layout_width="match_parent"
-        android:text="home"
-        android:textColor="#000000"
-        android:textSize="50sp"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"/>
 
-</LinearLayout>
+    <android.support.design.widget.BottomNavigationView
+        android:layout_alignParentBottom="true"
+        android:id="@+id/bottom_menu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/windowBackground"
+        app:itemIconTint="@color/colorGreen"
+        app:itemTextColor="@color/colorGreen"
+        app:menu="@menu/bottom_select_menu" />
+
+</RelativeLayout>

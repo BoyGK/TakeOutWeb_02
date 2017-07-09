@@ -10,9 +10,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.gkpoter.takeoutweb.bean.UserBean;
 import com.gkpoter.takeoutweb.bean.VersionBean;
 import com.gkpoter.takeoutweb.interface_.MyCallBack;
+import com.gkpoter.takeoutweb.ui.HomeActivity;
 import com.gkpoter.takeoutweb.ui.LoginActivity;
+import com.gkpoter.takeoutweb.util.DataUtils;
 import com.gkpoter.takeoutweb.util.HttpUtils;
 import com.gkpoter.takeoutweb.util.L;
 import com.google.gson.Gson;
@@ -99,13 +102,34 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private LoginCall call_l = new LoginCall() {
+        @Override
+        public void success(UserBean user) {
+            DataUtils util = new DataUtils("userbean", getApplicationContext());
+            util.clearData();
+            util.saveData("username", user.getData().getUsername());
+            util.saveData("phone", user.getData().getPhone());
+            util.saveData("password", user.getData().getUsername());
+            util.saveData("ak", user.getData().getAk());
+            util.saveData("userPhoto", user.getData().getUserPhoto());
+            startActivity(new Intent(getApplicationContext(), HomeActivity.class));
+            finish();
+        }
+
+        @Override
+        public void error() {
+            startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+            finish();
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         x.view().inject(this);
 
         HashMap<String, String> map = new HashMap<>();
-        HttpUtils.Get("v1/restaurant/check_version", map, new MyCallBack<String>() {
+        HttpUtils.Get("v1/market/check_version", map, new MyCallBack<String>() {
             @Override
             public void onSuccess(String result) {
                 VersionBean version = new Gson().fromJson(result, VersionBean.class);
@@ -114,13 +138,15 @@ public class MainActivity extends AppCompatActivity {
                         call.listener(version.getData().getUrl(), version.getData().getVersionCode());
                     } else {
                         L.i("not need update:" + version.getData().getVersionDescription());
-                        startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                        finish();
+                        doLogin();
+                        //startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                        //finish();
                     }
                 } else {
                     L.i(version.getMsg());
-                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                    finish();
+                    doLogin();
+                    //startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                    //finish();
                 }
             }
 
@@ -140,6 +166,42 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    //登录操作
+    private void doLogin() {
+        final DataUtils util = new DataUtils("userbean",getApplicationContext());
+        String ak = util.getData("ak","");
+        if(!ak.equals("")){
+            HashMap<String,String>map=new HashMap<>();
+            map.put("ak",ak);
+            HttpUtils.Get("v1/market/get_user_info", map, new MyCallBack<String>() {
+                @Override
+                public void onSuccess(String result) {
+                    UserBean bean = new Gson().fromJson(result,UserBean.class);
+                    if(bean!=null&&bean.getRet()!=0){
+                        call_l.error();
+                    }else{
+                        call_l.success(bean);
+                    }
+                }
+
+                @Override
+                public void onError(Throwable ex, boolean isOnCallback) {
+
+                }
+
+                @Override
+                public void onCancelled(CancelledException cex) {
+
+                }
+
+                @Override
+                public void onFinished() {
+
+                }
+            });
+        }
     }
 
     /**
@@ -187,6 +249,13 @@ public class MainActivity extends AppCompatActivity {
 
     private interface UpdateCall {
         void update(String url);
+    }
+
+    //登陆回调接口
+    private interface LoginCall {
+        void success(UserBean user);
+
+        void error();
     }
 
 }

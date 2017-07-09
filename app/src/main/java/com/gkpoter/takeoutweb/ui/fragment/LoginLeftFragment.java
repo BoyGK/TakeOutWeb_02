@@ -20,6 +20,7 @@ import com.gkpoter.takeoutweb.ui.HomeActivity;
 import com.gkpoter.takeoutweb.ui.RegisterActivity;
 import com.gkpoter.takeoutweb.util.DataUtils;
 import com.gkpoter.takeoutweb.util.HttpUtils;
+import com.gkpoter.takeoutweb.util.L;
 import com.google.gson.Gson;
 
 import org.xutils.view.annotation.ContentView;
@@ -59,7 +60,9 @@ public class LoginLeftFragment extends Fragment {
         call = new LoginCall() {
             @Override
             public void success(UserBean user) {
+                L.i(user.getData().getAk());
                 DataUtils util = new DataUtils("userbean", getActivity());
+                util.clearData();
                 util.saveData("username", user.getData().getUsername());
                 util.saveData("phone", user.getData().getPhone());
                 util.saveData("password", user.getData().getUsername());
